@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server Status</title>
+    <!-- 引入 Bootstrap CSS -->
+    <link href="{{ url_for('static', filename='bootstrap.min.css') }}" rel="stylesheet">
+    <style>
+        body {
+            margin: 20px;
+        }
+
+        h1, h2 {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1 class="text-center">GPU Server Status</h1>
+    <div id="servers-container">
+        <!-- 动态渲染服务器状态 -->
+    </div>
+</div>
+
+<!-- 引入 Bootstrap JavaScript -->
+<script src="{{ url_for('static', filename='bootstrap.bundle.min.js') }}"></script>
+<script>
+    function fetchServerStatus() {
+        // 调用后端 API 获取服务器状态数据
+        fetch('/api/server_status')
+            .then(response => response.json())
+            .then(data => {
+                const serversContainer = document.getElementById('servers-container');
+                serversContainer.innerHTML = ''; // 清空当前内容
+
+                // 动态生成服务器状态卡片
+                for (const [serverName, status] of Object.entries(data)) {
+                    const serverCard = `
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h2>${serverName}</h2>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>CPU Usage:</strong> ${status.cpu_usage}%</p>
+                                <p><strong>Memory:</strong> ${(status.memory_used / 1024).toFixed(2)} GB
+                                    / ${(status.memory_total / 1024).toFixed(2)} GB
+                                    (${status.memory_percentage}%)</p>
+
+                                <h3>GPU Status</h3>
+                                <table class="table table-striped">
+                                    <thead class="table-dark">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>GPU Name</th>
+                                        <th>Memory Usage</th>
+                                        <th>Usage Percentage</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    ${status.gpu_info.map((gpu, index) => `
+                                        <tr>
+                                            <td>${index}</td>
+                                            <td>${gpu.name}</td>
+                                            <td>${(gpu.memory_used / 1024).toFixed(2)} GB
+                                                / ${(gpu.memory_total / 1024).toFixed(2)} GB
+                                            </td>
+                                            <td>${gpu.usage_percentage}%</td>
+                                        </tr>
+                                    `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    `;
+                    serversContainer.innerHTML += serverCard;
+                }
+            })
+            .catch(error => console.error('Error fetching server status:', error));
+    }
+
+    // 每10秒刷新一次服务器状态
+    setInterval(fetchServerStatus, 10000);
+
+    // 页面加载时立即获取一次服务器状态
+    fetchServerStatus();
+</script>
+</body>
+</html>
