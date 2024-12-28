@@ -17,4 +17,4 @@ COPY . .
 EXPOSE 5000
 
 # 启动应用，使用 Gunicorn 作为 WSGI 服务器
-CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "app:app"]
+CMD ["gunicorn", "-w", "1", "-b", "0.0.0.0:5000", "app:app"]
