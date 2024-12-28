@@ -1,0 +1,11 @@
+version: "3.9"
+
+services:
+  gpu-monitor:
+    image: miracle996/gpu-monitor:latest  # 替换为你的 Docker 镜像名称
+    container_name: gpu-monitor                       # 容器名称
+    ports:
+      - "5000:5000"                                   # 映射主机的5000端口到容器的5000端口
+    volumes:
+      - ./config/:/app/config/  # 挂载本地config文件夹到容器中
+    restart: always                                   # 容器失败时自动重启
