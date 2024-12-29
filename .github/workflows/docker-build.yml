@@ -3,8 +3,13 @@ name: Build and Push Docker Image
 on:
   push:
     branches:
-      - master  # 当推送到 master 分支时触发
-  workflow_dispatch:  # 手动触发
+      - master
+    paths:
+      - "Dockerfile"
+      - "app.py"
+      - "static/**"
+      - "templates/**"
+  workflow_dispatch:
 
 jobs:
   build:
