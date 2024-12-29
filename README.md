@@ -96,8 +96,9 @@ services:
       - "5000:5000"
     volumes:
       - ./config/:/app/config/
+    environment:
+      - TZ=Asia/Shanghai
     restart: always
-
 ```
 
 ### Run the Docker Compose stack:
