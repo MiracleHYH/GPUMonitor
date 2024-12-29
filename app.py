@@ -112,6 +112,13 @@ def fetch_server_status():
                 }
             except Exception as e:
                 print(f"Failed to fetch status for {server_name}: {e}")
+                server_status[server_name] = {
+                    "cpu_usage": 0.0,
+                    "memory_used": 0,
+                    "memory_total": 0,
+                    "memory_percentage": 0.0,
+                    "gpu_info": []
+                }
 
         # 按配置的刷新间隔更新
         time.sleep(REFRESH_INTERVAL)
