@@ -104,6 +104,8 @@ def fetch_server_status():
 
                 # 更新全局状态
                 server_status[server_name] = {
+                    "last_updated": time.strftime("%Y-%m-%d %H:%M:%S"),
+                    "server_status": "Online",
                     "cpu_usage": cpu_usage,
                     "memory_used": memory_info["used"],
                     "memory_total": memory_info["total"],
@@ -113,6 +115,8 @@ def fetch_server_status():
             except Exception as e:
                 print(f"Failed to fetch status for {server_name}: {e}")
                 server_status[server_name] = {
+                    "last_updated": time.strftime("%Y-%m-%d %H:%M:%S"),
+                    "server_status": "Offline",
                     "cpu_usage": 0.0,
                     "memory_used": 0,
                     "memory_total": 0,

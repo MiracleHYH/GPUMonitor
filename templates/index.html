@@ -40,7 +40,8 @@
                     const serverCard = `
                         <div class="card mb-4">
                             <div class="card-header">
-                                <h2>${serverName}</h2>
+                                <h2>${serverName} (${status.server_status})</h2>
+                                <p class="text-muted">Last Updated: ${status.last_updated}</p>
                             </div>
                             <div class="card-body">
                                 <p><strong>CPU Usage:</strong> ${status.cpu_usage}%</p>
