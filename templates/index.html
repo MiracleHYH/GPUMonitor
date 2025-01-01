@@ -79,7 +79,7 @@
                                     </thead>
                                     <tbody>
                                     ${status.gpu_info.map((gpu, index) => {
-                                        const isLowUsage = (gpu.memory_used / gpu.memory_total) < 0.01 && gpu.usage_percentage < 1;
+                                        const isLowUsage = (gpu.memory_used / gpu.memory_total) < 0.05 && gpu.usage_percentage < 5;
                                         const statusClass = isLowUsage ? 'status-green' : 'status-red';
                                         return `
                                             <tr>

@@ -102,7 +102,8 @@ def fetch_server_status():
                 user_output, _ = manager.execute_command(f"ps -p {','.join(pids)} -o pid,user")
                 pid2user = parse_process_user_output(user_output)
                 for gpu in gpu_info:
-                    gpu["users"] = ",".join([pid2user[pid] for pid in process_per_gpu[gpu["gpu_uuid"]]])
+                    gpu_process = process_per_gpu.get(gpu["gpu_uuid"], [])
+                    gpu["users"] = ",".join([pid2user[pid] for pid in gpu_process])
 
                 # 获取 CPU 和内存信息
                 cpu_output, _ = manager.execute_command("top -bn1 | grep 'Cpu(s)'")
