@@ -92,8 +92,17 @@ def fetch_server_status():
             try:
                 # 获取 GPU 信息
                 nvidia_output, _ = manager.execute_command(
-                    "nvidia-smi --query-gpu=name,memory.used,memory.total --format=csv")
-                gpu_info = parse_nvidia_smi_output(nvidia_output)
+                    "nvidia-smi --query-gpu=name,memory.used,memory.total,utilization.gpu,gpu_uuid --format=csv")
+                gpu_info = parse_nvidia_smi_gpu_output(nvidia_output)
+
+                # 获取每张卡上显存占用最多的进程所属用户
+                nvidia_output, _ = manager.execute_command(
+                    "nvidia-smi --query-compute-apps=gpu_uuid,pid --format=csv")
+                process_per_gpu, pids = parse_nvidia_smi_process_output(nvidia_output)
+                user_output, _ = manager.execute_command(f"ps -p {','.join(pids)} -o pid,user")
+                pid2user = parse_process_user_output(user_output)
+                for gpu in gpu_info:
+                    gpu["users"] = ",".join([pid2user[pid] for pid in process_per_gpu[gpu["gpu_uuid"]]])
 
                 # 获取 CPU 和内存信息
                 cpu_output, _ = manager.execute_command("top -bn1 | grep 'Cpu(s)'")
@@ -128,9 +137,9 @@ def fetch_server_status():
         time.sleep(REFRESH_INTERVAL)
 
 
-def parse_nvidia_smi_output(output):
+def parse_nvidia_smi_gpu_output(output):
     """
-    解析 nvidia-smi 输出，提取显卡名称、显存占用和显存使用率。
+    解析 nvidia-smi 输出，提取显卡名称、显存占用、显存使用率和显卡UUID。
     """
     gpu_info = []
     for line in output.splitlines()[1:]:  # 跳过表头
@@ -138,14 +147,47 @@ def parse_nvidia_smi_output(output):
         gpu_name = parts[0].strip()
         memory_used = int(parts[1].strip().split()[0])  # 提取显存使用
         memory_total = int(parts[2].strip().split()[0])  # 提取显存总量
-        usage_percentage = (memory_used / memory_total) * 100
+        usage_percentage = int(parts[3].strip().split()[0])  # 提取显存使用率
+        gpu_uuid = parts[4].strip()
         gpu_info.append({
             "name": gpu_name,
             "memory_used": memory_used,
             "memory_total": memory_total,
-            "usage_percentage": round(usage_percentage, 2)
+            "usage_percentage": round(usage_percentage, 2),
+            "gpu_uuid": gpu_uuid
         })
     return gpu_info
+
+
+def parse_nvidia_smi_process_output(output):
+    """
+    解析 nvidia-smi 输出，提取每张卡上进程pid。
+    """
+    process = {}
+    pids = []
+    for line in output.splitlines()[1:]:  # 跳过表头
+        parts = line.split(",")
+        gpu_uuid = parts[0].strip()
+        pid = parts[1].strip()
+        pids.append(pid)
+        if gpu_uuid in process:
+            process[gpu_uuid].append(pid)
+        else:
+            process[gpu_uuid] = [pid]
+    return process, pids
+
+
+def parse_process_user_output(output):
+    """
+    解析 ps 输出，提取进程pid对应的用户。
+    """
+    pid2user = {}
+    for line in output.splitlines()[1:]:  # 跳过表头
+        parts = line.split()
+        pid = parts[0].strip()
+        user = parts[1].strip()
+        pid2user[pid] = user
+    return pid2user
 
 
 def parse_cpu_output(output):

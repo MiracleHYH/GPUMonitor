@@ -73,7 +73,8 @@
                                         <th>Status</th>
                                         <th>GPU Name</th>
                                         <th>Memory Usage</th>
-                                        <th>Usage Percentage</th>
+                                        <th>GPU UTL</th>
+                                        <th>Users</th>
                                     </tr>
                                     </thead>
                                     <tbody>
@@ -89,6 +90,7 @@
                                                     / ${(gpu.memory_total / 1024).toFixed(2)} GB
                                                 </td>
                                                 <td>${gpu.usage_percentage}%</td>
+                                                <td>${gpu.users}</td>
                                             </tr>
                                         `;
                                     }).join('')}
